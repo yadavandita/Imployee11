@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Background Gradient Animation */
+@keyframes moveGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: moveGradient 12s ease infinite;
+}
+
+/* Card Fade In */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade {
+  animation: fadeIn 1.2s ease forwards;
+}
+
+/* Logo Title Fade Up */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeUp {
+  animation: fadeUp 1.4s ease forwards;
+}
+/* Splash Zoom Animation */
+@keyframes zoomIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  60% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+.splash-animate {
+  animation: zoomIn 1.5s ease-out forwards;
+}
+
+@keyframes scaleIn {
+  0% { transform: scale(0.4); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-scaleIn {
+  animation: scaleIn 1.6s ease-in-out forwards;
+}
+
+/* Dark themed select dropdown for IMPLOYEE */
+.dark-select {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  outline: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark-select:focus {
+  background-color: rgba(255, 255, 255, 0.25);
+  border-color: #38bdf8; /* sky-400 */
+}
+
+/* Dropdown options (limited browser support but helps) */
+.dark-select option {
+  background-color: #020617; /* dark background */
+  color: white;
+}
