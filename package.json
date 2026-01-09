@@ -6,7 +6,9 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.15.3",
-    "nodemon": "^3.1.11",
-    "vite": "^7.2.6"
+    "nodemon": "^3.1.11"
+  },
+  "devDependencies": {
+    "vite": "^7.3.1"
   }
 }
