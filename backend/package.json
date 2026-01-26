@@ -1,13 +1,14 @@
 {
-  "name": "imployee-frontend",
+  "name": "imployee-backend",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "start": "node server.js",
+    "dev": "node server.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "axios": "^1.6.7",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
