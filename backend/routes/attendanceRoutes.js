@@ -1,19 +1,10 @@
 import express from "express";
-import { 
-  markAttendance,
-  getTodayAttendance, 
-  getAttendanceHistory 
-} from "../controllers/attendanceController.js";
+import { getTodayAttendance } from "../controllers/attendanceController.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Mark attendance
-router.post("/mark", markAttendance);
-
-// Get today's attendance
-router.get("/today/:userId", getTodayAttendance);
-
-// Get attendance history
-router.get("/history/:userId", getAttendanceHistory);
+router.get("/today/:userId", authMiddleware, getTodayAttendance);
 
 export default router;
+

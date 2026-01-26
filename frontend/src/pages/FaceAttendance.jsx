@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import toast, { Toaster } from "react-hot-toast";
-import { MapPin, Camera, CheckCircle } from "lucide-react";
 
+/* Office Location */
 const OFFICE_LOCATION = {
   lat: 19.183925,
   lng: 72.837345
@@ -10,6 +10,7 @@ const OFFICE_LOCATION = {
 
 const ALLOWED_RADIUS = 8000;
 
+/* Distance calc */
 function getDistanceInMeters(lat1, lon1, lat2, lon2) {
   const R = 6371000;
   const toRad = (v) => (v * Math.PI) / 180;
@@ -30,35 +31,19 @@ function getDistanceInMeters(lat1, lon1, lat2, lon2) {
 export default function FaceAttendance() {
   const videoRef = useRef(null);
   const [cameraOn, setCameraOn] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [locationInfo, setLocationInfo] = useState(null);
 
+  /* Start camera */
   useEffect(() => {
     navigator.mediaDevices
       .getUserMedia({ video: true })
       .then((stream) => {
         videoRef.current.srcObject = stream;
         setCameraOn(true);
-        toast.success("Camera ready!");
       })
       .catch(() => toast.error("Camera access denied"));
-
-    // Get location on load
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        const distance = getDistanceInMeters(
-          OFFICE_LOCATION.lat,
-          OFFICE_LOCATION.lng,
-          latitude,
-          longitude
-        );
-        setLocationInfo({ latitude, longitude, distance: Math.round(distance) });
-      },
-      () => toast.error("Location permission required")
-    );
   }, []);
 
+  /* Capture image */
   const captureImage = () => {
     const canvas = document.createElement("canvas");
     canvas.width = videoRef.current.videoWidth;
@@ -69,77 +54,66 @@ export default function FaceAttendance() {
   };
 
   const handleAttendance = () => {
-    if (!cameraOn) {
-      toast.error("Camera not ready");
-      return;
-    }
+  if (!cameraOn) {
+    toast.error("Camera not ready");
+    return;
+  }
 
-    setLoading(true);
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const { latitude, longitude } = pos.coords;
 
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude, longitude } = pos.coords;
+      const distance = getDistanceInMeters(
+        OFFICE_LOCATION.lat,
+        OFFICE_LOCATION.lng,
+        latitude,
+        longitude
+      );
 
-        const distance = getDistanceInMeters(
-          OFFICE_LOCATION.lat,
-          OFFICE_LOCATION.lng,
+      if (distance > ALLOWED_RADIUS) {
+        toast.error("Outside office premises");
+        return;
+      }
+
+      const faceImage = captureImage();
+
+      const res = await fetch("http://localhost:5000/api/attendance/mark", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: "TEMP_USER_ID", // later from JWT
           latitude,
-          longitude
-        );
+          longitude,
+          faceImage
+        })
+      });
 
-        if (distance > ALLOWED_RADIUS) {
-          toast.error(`You are ${Math.round(distance)}m away from office!`);
-          setLoading(false);
-          return;
-        }
+      const data = await res.json();
 
-        const faceImage = captureImage();
-        const user = JSON.parse(localStorage.getItem('user'));
+      if (!res.ok) {
+        toast.error(data.message);
+        return;
+      }
 
-        try {
-          const res = await fetch("http://localhost:5000/api/attendance/mark", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              userId: user?._id || "678d1234567890abcdef1234",
-              latitude,
-              longitude,
-              faceImage
-            })
-          });
+      // ✅ REAL MESSAGE FROM BACKEND
+      toast.success(data.message);
+    },
+    () => toast.error("Location permission required"),
+    { enableHighAccuracy: true }
+  );
+};
 
-          const data = await res.json();
-
-          if (data.success) {
-            toast.success(data.message);
-          } else {
-            toast.error(data.message);
-          }
-        } catch (error) {
-          toast.error("Failed to mark attendance");
-        } finally {
-          setLoading(false);
-        }
-      },
-      () => {
-        toast.error("Location permission required");
-        setLoading(false);
-      },
-      { enableHighAccuracy: true }
-    );
-  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center p-6">
-      <Toaster position="top-center" />
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
+      <Toaster />
 
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 text-white w-full max-w-md"
+        className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 text-white w-[360px]"
       >
-        <h2 className="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
-          <Camera className="text-blue-400" />
+        <h2 className="text-xl font-semibold text-center mb-4">
           Attendance Verification
         </h2>
 
@@ -147,44 +121,18 @@ export default function FaceAttendance() {
           ref={videoRef}
           autoPlay
           muted
-          className="rounded-xl w-full mb-4 border-2 border-white/20"
+          className="rounded-xl w-full mb-4 border border-white/20"
         />
 
-        {locationInfo && (
-          <div className="bg-white/10 rounded-lg p-4 mb-4">
-            <div className="flex items-center gap-2 mb-2">
-              <MapPin className="text-green-400" size={18} />
-              <span className="text-sm font-semibold">Location Status</span>
-            </div>
-            <p className="text-xs text-gray-300">
-              Distance from office: <strong className={locationInfo.distance > ALLOWED_RADIUS ? 'text-red-400' : 'text-green-400'}>{locationInfo.distance}m</strong>
-            </p>
-            <p className="text-xs text-gray-400 mt-1">
-              Allowed radius: {ALLOWED_RADIUS}m
-            </p>
-          </div>
-        )}
-
-        <p className="text-sm text-gray-300 text-center mb-4">
+        <p className="text-sm text-gray-300 text-center mb-3">
           Align your face properly and mark attendance
         </p>
 
         <button
           onClick={handleAttendance}
-          disabled={!cameraOn || loading}
-          className="w-full py-3 bg-green-500 hover:bg-green-600 rounded-xl font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-2 bg-green-500 hover:bg-green-600 rounded-xl font-semibold transition"
         >
-          {loading ? (
-            <>
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Marking...
-            </>
-          ) : (
-            <>
-              <CheckCircle size={20} />
-              Mark Attendance
-            </>
-          )}
+          Mark Attendance
         </button>
       </motion.div>
     </div>

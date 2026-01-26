@@ -5,6 +5,15 @@ const API = axios.create({
   baseURL: "http://localhost:5000/api/auth",
 });
 
+// Add token to all requests
+API.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // Check email
 export const checkEmail = (email) =>
   API.post("/check-email", { email });

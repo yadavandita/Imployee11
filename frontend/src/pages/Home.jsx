@@ -11,16 +11,20 @@ export default function Home() {
 
   useEffect(() => {
     // Check if user is logged in
-    const userData = JSON.parse(localStorage.getItem('user'));
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+    const userName = localStorage.getItem('userName');
+    const role = localStorage.getItem('role');
     
-    if (!userData || !userData._id) {
+    if (!token || !userId) {
       toast.error("Please login first");
       navigate("/login");
       return;
     }
 
+    const userData = { _id: userId, name: userName, role };
     setUser(userData);
-    fetchTodayAttendance(userData._id);
+    fetchTodayAttendance(userId);
   }, [navigate]);
 
   const fetchTodayAttendance = async (userId) => {
@@ -122,7 +126,10 @@ export default function Home() {
           title="Logout"
           icon="➡️"
           onClick={() => {
-            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('role');
             navigate("/");
           }}
         />

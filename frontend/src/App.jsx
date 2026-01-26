@@ -1,8 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 import Landing from "./pages/landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Home from "./pages/Home";
@@ -12,8 +14,7 @@ import FaceAttendance from "./pages/FaceAttendance";
 import AttendanceHistory from "./pages/AttendanceHistory";
 import ManagerDashboard from './pages/ManagerDashboard';
 import HRAssistant from './pages/HRAssistant';
-import Payroll from './pages/Payroll'; // ✅ ADD THIS LINE
-import TestPayroll from './pages/TestPayroll'; // Add import
+import Payroll from './pages/Payroll';
 
 export default function App() {
   return (
@@ -26,23 +27,23 @@ export default function App() {
         {/* 🔐 AUTH ROUTES */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* 🏠 MAIN APP */}
-        <Route path="/home" element={<Home />} />
-        <Route path="/manager-dashboard" element={<ManagerDashboard />} /> 
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/profile-dashboard" element={<ProfileDashboard />} />
-        <Route path="/hr-assistant" element={<HRAssistant />} />
-        <Route path="/test-payroll" element={<TestPayroll />} />
+        {/* 🏠 MAIN APP (PROTECTED) */}
+        <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/manager-dashboard" element={<ProtectedRoute><ManagerDashboard /></ProtectedRoute>} /> 
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/profile-dashboard" element={<ProtectedRoute><ProfileDashboard /></ProtectedRoute>} />
+        <Route path="/hr-assistant" element={<ProtectedRoute><HRAssistant /></ProtectedRoute>} />
 
-        {/* 📸 ATTENDANCE */}
-        <Route path="/attendance" element={<FaceAttendance />} />
-        <Route path="/attendance-history" element={<AttendanceHistory />} />
+        {/* 📸 ATTENDANCE (PROTECTED) */}
+        <Route path="/attendance" element={<ProtectedRoute><FaceAttendance /></ProtectedRoute>} />
+        <Route path="/attendance-history" element={<ProtectedRoute><AttendanceHistory /></ProtectedRoute>} />
 
-        {/* 💰 PAYROLL */}
-        <Route path="/payroll" element={<Payroll />} /> {/* ✅ ADD THIS LINE */}
+        {/* 💰 PAYROLL (PROTECTED) */}
+        <Route path="/payroll" element={<ProtectedRoute><Payroll /></ProtectedRoute>} />
 
         {/* ❌ FALLBACK */}
         <Route path="*" element={<Navigate to="/" />} />
