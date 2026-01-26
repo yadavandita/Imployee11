@@ -13,6 +13,16 @@ const profileSchema = new mongoose.Schema(
     designation: String,
     employmentType: String,
     reportingManager: String,
+    role: {
+      type: String,
+      enum: ['EMPLOYEE', 'ADMIN'],
+      default: 'EMPLOYEE'
+    },
+    status: {
+      type: String,
+      enum: ['pending', 'approved'],
+      default: 'pending'
+    },
     birthDate: Date,
     joiningDate: Date,
     locked: {

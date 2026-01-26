@@ -2,22 +2,31 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 
-const USER_ID = "TEMP_USER_ID"; // later replace with real logged-in user id
-
 export default function Home() {
   const navigate = useNavigate();
   const [attendance, setAttendance] = useState(null);
+  const [user, setUser] = useState(null);
 
   const today = new Date().toDateString();
 
   useEffect(() => {
-    fetchTodayAttendance();
-  }, []);
+    // Check if user is logged in
+    const userData = JSON.parse(localStorage.getItem('user'));
+    
+    if (!userData || !userData._id) {
+      toast.error("Please login first");
+      navigate("/login");
+      return;
+    }
 
-  const fetchTodayAttendance = async () => {
+    setUser(userData);
+    fetchTodayAttendance(userData._id);
+  }, [navigate]);
+
+  const fetchTodayAttendance = async (userId) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/attendance/today/${USER_ID}`
+        `http://localhost:5000/api/attendance/today/${userId}`
       );
 
       if (!res.ok) throw new Error("Bad response");
@@ -30,6 +39,17 @@ export default function Home() {
     }
   };
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#020617] to-black flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#020617] to-black text-white p-8">
       <Toaster />
@@ -38,7 +58,7 @@ export default function Home() {
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-sky-400">IMPLOYEE</h1>
         <p className="text-gray-300 mt-1">
-          Welcome back, <span className="font-semibold">Vandita</span>
+          Welcome back, <span className="font-semibold">{user.name || user.email}</span>
         </p>
         <p className="text-gray-400 text-sm">{today}</p>
       </div>
@@ -47,7 +67,7 @@ export default function Home() {
       <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6 mb-8">
         <div className="flex items-center gap-3">
           <span className="text-red-400 text-2xl">📅</span>
-          <h2 className="text-lg font-semibold">Today’s Status</h2>
+          <h2 className="text-lg font-semibold">Today's Status</h2>
         </div>
 
         <p className="mt-2 text-lg">
@@ -77,24 +97,40 @@ export default function Home() {
         <DashboardCard
           title="Profile"
           icon="👤"
-          onClick={() => navigate("/profile")}
+          onClick={() => navigate("/profile-dashboard")}
         />
         
-        <DashboardCard title="Payroll" icon="💳" />
-        <DashboardCard title="Analytics" icon="📊" />
-        <DashboardCard title="HR Assistant" icon="🧠" />
+        <DashboardCard 
+          title="Payroll" 
+          icon="💳" 
+          onClick={() => navigate("/payroll")}
+        />
+        
+        <DashboardCard 
+          title="Analytics" 
+          icon="📊" 
+          onClick={() => toast.error("Analytics coming soon!")}
+        />
+        
+        <DashboardCard 
+          title="HR Assistant" 
+          icon="🧠" 
+          onClick={() => navigate("/hr-assistant")}
+        />
 
         <DashboardCard
           title="Logout"
           icon="➡️"
-          onClick={() => navigate("/")}
+          onClick={() => {
+            localStorage.removeItem('user');
+            navigate("/");
+          }}
         />
       </div>
     </div>
   );
 }
 
-/* Card Component */
 function DashboardCard({ title, icon, onClick }) {
   return (
     <div

@@ -4,7 +4,9 @@ const userSchema = new mongoose.Schema(
   {
     employeeId: {
       type: String,
-      default: "EMP001"
+      default: function() {
+        return "EMP" + Math.floor(100000 + Math.random() * 900000);
+      }
     },
 
     name: {
@@ -23,12 +25,6 @@ const userSchema = new mongoose.Schema(
       required: true
     },
 
-    department: String,
-    designation: String,
-    employmentType: String,
-    reportingManager: String,
-    birthDate: Date,
-
     profileLocked: {
       type: Boolean,
       default: false
@@ -36,9 +32,13 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["EMPLOYEE", "ADMIN"],
+      enum: ["EMPLOYEE", "ADMIN", "MANAGER"],
       default: "EMPLOYEE"
-    }
+    },
+
+    // OTP fields for password reset
+    otp: String,
+    otpExpires: Date
   },
   { timestamps: true }
 );
