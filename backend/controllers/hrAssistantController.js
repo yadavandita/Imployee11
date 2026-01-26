@@ -27,6 +27,8 @@ const HR_ASSISTANT_SYSTEM_PROMPT = `You are an expert HR Assistant for IMPLOYEE,
 
 **Important Guidelines:**
 - Always be professional and helpful
+- Automatically use the appropriate tools to fetch the employee's data without asking for employee ID
+- The employee's information is already loaded and available to you through the tools
 - Provide accurate information from the tools you have access to
 - When a user asks about their personal data (leaves, attendance, salary), use the appropriate tool to fetch actual data
 - For policy questions, search through available policies
@@ -38,13 +40,22 @@ const HR_ASSISTANT_SYSTEM_PROMPT = `You are an expert HR Assistant for IMPLOYEE,
 
 **Available Tools:**
 You have access to tools that can fetch:
-- User's leave balance and history
-- User's attendance summary and records
-- User's payroll information and deductions
-- Company HR policies and guidelines
-- User's profile information
-- Application information and features
-- Search through HR policies by topic
+- User's leave balance and history (use get_leave_balance)
+- User's attendance summary and records (use get_attendance_summary)
+- User's payroll information and deductions (use get_payroll_info)
+- Company HR policies and guidelines (use get_hr_policies)
+- User's profile information (use get_profile_info)
+- Application information and features (use get_application_info)
+- Search through HR policies by topic (use search_policy)
+
+**When to Use Tools:**
+- ALWAYS use the tools to fetch fresh data - do not make assumptions
+- Use get_leave_balance whenever asked about leaves, leave balance, or time off
+- Use get_attendance_summary for any attendance-related queries
+- Use get_payroll_info for salary, deductions, or payment questions
+- Use get_profile_info to show the user their profile information
+- Use get_application_info for platform-related questions
+- Use search_policy or get_hr_policies for policy-related questions
 
 **Tone:**
 - Professional yet friendly
@@ -77,49 +88,34 @@ export const chatWithHRAssistant = async (req, res) => {
     const toolDefinitions = [
       {
         name: "get_leave_balance",
-        description: "Get the user's current leave balance including casual, sick, and earned leaves",
+        description: "Get the logged-in employee's current leave balance including casual, sick, and earned leaves. No parameters needed.",
         parameters: {
           type: "object",
-          properties: {
-            employeeId: {
-              type: "string",
-              description: "The employee ID",
-            },
-          },
-          required: ["employeeId"],
+          properties: {},
+          required: [],
         },
       },
       {
         name: "get_attendance_summary",
-        description: "Get the user's attendance statistics for current month and year-to-date",
+        description: "Get the logged-in employee's attendance statistics for current month and year-to-date. No parameters needed.",
         parameters: {
           type: "object",
-          properties: {
-            employeeId: {
-              type: "string",
-              description: "The employee ID",
-            },
-          },
-          required: ["employeeId"],
+          properties: {},
+          required: [],
         },
       },
       {
         name: "get_payroll_info",
-        description: "Get the user's salary, payroll deductions, and earning information",
+        description: "Get the logged-in employee's salary, payroll deductions, and earning information. No parameters needed.",
         parameters: {
           type: "object",
-          properties: {
-            employeeId: {
-              type: "string",
-              description: "The employee ID",
-            },
-          },
-          required: ["employeeId"],
+          properties: {},
+          required: [],
         },
       },
       {
         name: "get_hr_policies",
-        description: "Get the company HR policies including leave, benefits, working hours, and salary information",
+        description: "Get the company HR policies including leave, benefits, working hours, and salary information. No parameters needed.",
         parameters: {
           type: "object",
           properties: {},
@@ -128,21 +124,16 @@ export const chatWithHRAssistant = async (req, res) => {
       },
       {
         name: "get_profile_info",
-        description: "Get the user's profile information including personal and professional details",
+        description: "Get the logged-in employee's profile information including personal and professional details. No parameters needed.",
         parameters: {
           type: "object",
-          properties: {
-            employeeId: {
-              type: "string",
-              description: "The employee ID",
-            },
-          },
-          required: ["employeeId"],
+          properties: {},
+          required: [],
         },
       },
       {
         name: "get_application_info",
-        description: "Get information about IMPLOYEE application, its features, and support information",
+        description: "Get information about IMPLOYEE application, its features, and support information. No parameters needed.",
         parameters: {
           type: "object",
           properties: {},
@@ -167,7 +158,7 @@ export const chatWithHRAssistant = async (req, res) => {
 
     // Initialize Gemini model with tools using generateContent API
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
       systemInstruction: HR_ASSISTANT_SYSTEM_PROMPT,
     });
 
@@ -219,25 +210,25 @@ export const chatWithHRAssistant = async (req, res) => {
           let toolResult;
           switch (toolName) {
             case "get_leave_balance":
-              toolResult = await getUserLeaveBalance(toolArgs.employeeId || employeeId);
+              toolResult = await getUserLeaveBalance(employeeId);
               break;
             case "get_attendance_summary":
-              toolResult = await getUserAttendanceSummary(toolArgs.employeeId || employeeId);
+              toolResult = await getUserAttendanceSummary(employeeId);
               break;
             case "get_payroll_info":
-              toolResult = await getUserPayrollInfo(toolArgs.employeeId || employeeId);
+              toolResult = await getUserPayrollInfo(employeeId);
               break;
             case "get_hr_policies":
               toolResult = await getCompanyHRPolicies();
               break;
             case "get_profile_info":
-              toolResult = await getUserProfileInfo(toolArgs.employeeId || employeeId);
+              toolResult = await getUserProfileInfo(employeeId);
               break;
             case "get_application_info":
               toolResult = await getApplicationInfo();
               break;
             case "search_policy":
-              toolResult = await searchHRPolicy(toolArgs.topic);
+              toolResult = await searchHRPolicy(toolArgs.topic || "HR");
               break;
             default:
               toolResult = { error: `Unknown tool: ${toolName}` };
