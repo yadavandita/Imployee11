@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
+import axios from "axios";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -24,22 +25,25 @@ export default function Home() {
 
     const userData = { _id: userId, name: userName, role };
     setUser(userData);
-    fetchTodayAttendance(userId);
+    fetchTodayAttendance(userId, token);
   }, [navigate]);
 
-  const fetchTodayAttendance = async (userId) => {
+  const fetchTodayAttendance = async (userId, token) => {
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/attendance/today/${userId}`
+      const res = await axios.get(
+        `http://localhost:5000/api/attendance/today/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        }
       );
 
-      if (!res.ok) throw new Error("Bad response");
-
-      const data = await res.json();
-      setAttendance(data);
+      setAttendance(res.data);
     } catch (err) {
-      console.error(err);
-      toast.error("Server not responding");
+      console.error("Error fetching attendance:", err);
+      toast.error("Server not responding or unauthorized");
     }
   };
 

@@ -54,54 +54,102 @@ export default function FaceAttendance() {
   };
 
   const handleAttendance = () => {
-  if (!cameraOn) {
-    toast.error("Camera not ready");
-    return;
-  }
+    if (!cameraOn) {
+      toast.error("Camera not ready");
+      return;
+    }
 
-  navigator.geolocation.getCurrentPosition(
-    async (pos) => {
-      const { latitude, longitude } = pos.coords;
+    // Check if geolocation is supported
+    if (!navigator.geolocation) {
+      toast.error("Geolocation not supported by your browser");
+      return;
+    }
 
-      const distance = getDistanceInMeters(
-        OFFICE_LOCATION.lat,
-        OFFICE_LOCATION.lng,
-        latitude,
-        longitude
-      );
+    // Show loading toast
+    const loadingToast = toast.loading("Getting your location...");
 
-      if (distance > ALLOWED_RADIUS) {
-        toast.error("Outside office premises");
-        return;
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          toast.dismiss(loadingToast);
+          
+          const { latitude, longitude } = pos.coords;
+
+          const distance = getDistanceInMeters(
+            OFFICE_LOCATION.lat,
+            OFFICE_LOCATION.lng,
+            latitude,
+            longitude
+          );
+
+          // Convert to kilometers for display
+          const distanceInKm = (distance / 1000).toFixed(2);
+
+          if (distance > ALLOWED_RADIUS) {
+            toast.error(`Outside office premises (${distanceInKm} km away)`);
+            return;
+          }
+
+          const faceImage = captureImage();
+          const userId = localStorage.getItem("userId");
+
+          if (!userId) {
+            toast.error("User session expired. Please login again.");
+            return;
+          }
+
+          const res = await fetch("http://localhost:5000/api/attendance/mark", {
+            method: "POST",
+            headers: { 
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${localStorage.getItem("token")}`
+            },
+            body: JSON.stringify({
+              userId,
+              latitude,
+              longitude,
+              faceImage
+            })
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            toast.error(data.message || "Attendance marking failed");
+            return;
+          }
+
+          // ✅ REAL MESSAGE FROM BACKEND
+          toast.success(data.message || "Attendance marked successfully!");
+        } catch (error) {
+          toast.error("Error marking attendance: " + error.message);
+        }
+      },
+      (error) => {
+        toast.dismiss(loadingToast);
+        
+        // Handle different geolocation errors
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            toast.error("Please enable location permission in your browser settings");
+            break;
+          case error.POSITION_UNAVAILABLE:
+            toast.error("Location information is unavailable");
+            break;
+          case error.TIMEOUT:
+            toast.error("Location request timed out. Please try again.");
+            break;
+          default:
+            toast.error("Unable to get your location: " + error.message);
+        }
+      },
+      { 
+        enableHighAccuracy: false,
+        timeout: 10000,
+        maximumAge: 0
       }
-
-      const faceImage = captureImage();
-
-      const res = await fetch("http://localhost:5000/api/attendance/mark", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: "TEMP_USER_ID", // later from JWT
-          latitude,
-          longitude,
-          faceImage
-        })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast.error(data.message);
-        return;
-      }
-
-      // ✅ REAL MESSAGE FROM BACKEND
-      toast.success(data.message);
-    },
-    () => toast.error("Location permission required"),
-    { enableHighAccuracy: true }
-  );
-};
+    );
+  };
 
 
   return (
