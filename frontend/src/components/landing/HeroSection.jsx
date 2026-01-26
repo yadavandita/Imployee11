@@ -5,7 +5,7 @@ import { ArrowRight, Play, Sparkles } from 'lucide-react';
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-screen overflow-hidden bg-slate-900 pt-24">
+    <section className="relative min-h-full overflow-hidden bg-slate-900 pt-24">
       {/* Animated background gradients */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -56,7 +56,7 @@ export function HeroSection() {
         }}
       />
 
-      <div className="relative mx-auto max-w-7xl px-6 py-24 lg:px-8 lg:py-32">
+      <div className="relative flex justify-center align-middle mx-auto max-w-screen px-6 py-24 lg:px-8 lg:py-32">
         <div className="flex flex-col items-center text-center">
           {/* Badge */}
           <motion.div
