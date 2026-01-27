@@ -8,6 +8,7 @@ import profileRoutes from "./routes/profileRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import hrAssistantRoutes from "./routes/hrAssistantRoutes.js";
 import payrollRoutes from "./routes/payrollRoutes.js";
+import signalsRoutes from "./routes/signalsRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -24,6 +25,7 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/hr-assistant", hrAssistantRoutes);
 app.use("/api/payroll", payrollRoutes);
+app.use("/api/signals", signalsRoutes);
 
 const PORT = process.env.PORT || 5000;
 

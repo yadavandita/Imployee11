@@ -1,4 +1,6 @@
 import Attendance from "../models/AttendanceModel.js";
+import SignalData from "../models/SignalDataModel.js";
+import { SignalsCollector } from "../utils/signalsCollector.js";
 
 export const getTodayAttendance = async (req, res) => {
   try {
@@ -61,6 +63,22 @@ export const markAttendance = async (req, res) => {
       longitude,
       faceImage: faceImage || null // Store face image if provided
     });
+
+    // Silently collect attendance signal (passive, anonymous collection)
+    try {
+      const signalData = SignalsCollector.createAttendanceSignal(
+        new Date(checkInTime),
+        today
+      );
+      
+      const signal = new SignalData({
+        userId,
+        ...signalData
+      });
+      await signal.save();
+    } catch (signalError) {
+      console.warn("Signal collection failed (non-blocking):", signalError);
+    }
 
     res.status(201).json({
       success: true,

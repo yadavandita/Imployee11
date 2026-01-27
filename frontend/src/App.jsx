@@ -15,6 +15,8 @@ import AttendanceHistory from "./pages/AttendanceHistory";
 import ManagerDashboard from './pages/ManagerDashboard';
 import HRAssistant from './pages/HRAssistant';
 import Payroll from './pages/Payroll';
+import Analytics from './pages/Analytics';
+import SilentSignalsDashboard from './pages/SilentSignalsDashboard';
 
 export default function App() {
   return (
@@ -33,7 +35,6 @@ export default function App() {
 
         {/* 🏠 MAIN APP (PROTECTED) */}
         <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-        <Route path="/manager-dashboard" element={<ProtectedRoute><ManagerDashboard /></ProtectedRoute>} /> 
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/profile-dashboard" element={<ProtectedRoute><ProfileDashboard /></ProtectedRoute>} />
         <Route path="/hr-assistant" element={<ProtectedRoute><HRAssistant /></ProtectedRoute>} />
@@ -42,9 +43,13 @@ export default function App() {
         <Route path="/attendance" element={<ProtectedRoute><FaceAttendance /></ProtectedRoute>} />
         <Route path="/attendance-history" element={<ProtectedRoute><AttendanceHistory /></ProtectedRoute>} />
 
+        {/* 📊 MANAGER DASHBOARDS (PROTECTED) */}
+        <Route path="/manager-dashboard" element={<ProtectedRoute><ManagerDashboard /></ProtectedRoute>} />
+        <Route path="/silent-signals" element={<ProtectedRoute><SilentSignalsDashboard /></ProtectedRoute>} />
+
         {/* 💰 PAYROLL (PROTECTED) */}
         <Route path="/payroll" element={<ProtectedRoute><Payroll /></ProtectedRoute>} />
-
+        <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
         {/* ❌ FALLBACK */}
         <Route path="*" element={<Navigate to="/" />} />
 

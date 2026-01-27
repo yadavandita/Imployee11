@@ -17,11 +17,20 @@ router.get("/managers", async (req, res) => {
     console.log("✅ Found managers in profiles:", profileManagers);
 
     if (profileManagers && profileManagers.length > 0) {
+      // Get user details for email
+      const managerIds = profileManagers.map(p => p.userId);
+      const users = await User.find({ _id: { $in: managerIds } }).select("_id email");
+      const emailMap = {};
+      users.forEach(u => {
+        emailMap[u._id] = u.email;
+      });
+
       return res.json({
         success: true,
         managers: profileManagers.map(p => ({
           _id: p.userId,
-          name: p.fullName
+          name: p.fullName,
+          email: emailMap[p.userId] || "N/A"
         }))
       });
     }

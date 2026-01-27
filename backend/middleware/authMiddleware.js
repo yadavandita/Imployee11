@@ -34,3 +34,5 @@ export const roleMiddleware = (allowedRoles) => {
     next();
   };
 };
+
+export default authMiddleware;

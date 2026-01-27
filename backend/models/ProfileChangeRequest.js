@@ -13,15 +13,28 @@ const profileChangeRequestSchema = new mongoose.Schema({
     /*
       Example:
       {
-        department: { old: "Engineering", new: "HR" },
-        reportingManager: { old: "Vandita Yadav", new: "Ayushman Singh" }
+        fullName: "John Doe",
+        department: "Engineering",
+        designation: "Senior Developer",
+        reportingManager: "manager_id"
       }
     */
   },
 
-  reason: {
+  reportingManagerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
+
+  reportingManagerName: {
     type: String,
     required: true
+  },
+
+  reason: {
+    type: String,
+    default: "Initial profile submission"
   },
 
   status: {
@@ -36,7 +49,12 @@ const profileChangeRequestSchema = new mongoose.Schema({
   },
 
   reviewedAt: Date,
-  reviewedBy: String // manager name or id
+  reviewedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  },
+
+  rejectionReason: String
 });
 
 export default mongoose.model(

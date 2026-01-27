@@ -117,7 +117,7 @@ export default function Home() {
         <DashboardCard 
           title="Analytics" 
           icon="📊" 
-          onClick={() => toast.error("Analytics coming soon!")}
+          onClick={() => navigate("/analytics")}
         />
         
         <DashboardCard 
@@ -125,6 +125,16 @@ export default function Home() {
           icon="🧠" 
           onClick={() => navigate("/hr-assistant")}
         />
+
+        {/* Manager/Admin Only */}
+        {(user.role === 'MANAGER' || user.role === 'ADMIN') && (
+          <DashboardCard
+            title="Silent Signals"
+            icon="🎯"
+            onClick={() => navigate("/silent-signals")}
+            isSpecial
+          />
+        )}
 
         <DashboardCard
           title="Logout"
@@ -142,13 +152,17 @@ export default function Home() {
   );
 }
 
-function DashboardCard({ title, icon, onClick }) {
+function DashboardCard({ title, icon, onClick, isSpecial }) {
   return (
     <div
       onClick={onClick}
-      className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-8
+      className={`backdrop-blur-md border rounded-xl p-8
                  flex flex-col items-center justify-center
-                 hover:bg-white/20 transition cursor-pointer"
+                 hover:transition cursor-pointer ${
+                   isSpecial
+                     ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400/30 hover:from-purple-500/30 hover:to-pink-500/30'
+                     : 'bg-white/10 border-white/20 hover:bg-white/20'
+                 }`}
     >
       <div className="text-3xl mb-2">{icon}</div>
       <p className="text-lg font-medium">{title}</p>
