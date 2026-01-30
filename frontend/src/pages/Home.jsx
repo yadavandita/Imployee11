@@ -9,14 +9,26 @@ export default function Home() {
   const [user, setUser] = useState(null);
 
   const today = new Date().toDateString();
+  const [loggingOut, setLoggingOut] = useState(false);
 
+  const handleLogout = () => {
+    setLoggingOut(true);
+
+    setTimeout(() => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("userName");
+      localStorage.removeItem("role");
+      navigate("/");
+    }, 280);
+  };
   useEffect(() => {
     // Check if user is logged in
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
     const userName = localStorage.getItem('userName');
     const role = localStorage.getItem('role');
-    
+
     if (!token || !userId) {
       toast.error("Please login first");
       navigate("/login");
@@ -63,14 +75,39 @@ export default function Home() {
       <Toaster />
 
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-sky-400">IMPLOYEE</h1>
-        <p className="text-gray-300 mt-1">
-          Welcome back, <span className="font-semibold">{user.name || user.email}</span>
-        </p>
-        <p className="text-gray-400 text-sm">{today}</p>
+      <div className="mb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-4xl font-bold text-sky-400">IMPLOYEE</h1>
+          <p className="text-gray-300 mt-1">
+            Welcome back, <span className="font-semibold">{user.name || user.email}</span>
+          </p>
+          <p className="text-gray-400 text-sm">{today}</p>
+        </div>
+        <button
+          onClick={handleLogout}
+          disabled={loggingOut}
+          className={`
+        w-[150px] h-[40px]
+        flex items-center justify-center gap-2
+        rounded-xl border border-blue-300/30
+        bg-blue-400/20 backdrop-blur-md
+        text-blue-50 text-sm font-medium
+        transition-all duration-300 ease-out
+        hover:bg-blue-400/30 hover:shadow-[0_8px_24px_rgba(59,130,246,0.35)]
+        active:scale-95
+        disabled:opacity-60 disabled:pointer-events-none
+        ${loggingOut ? "scale-95 opacity-60" : ""}
+      `}
+        >
+          <span>Logout</span>
+          <span
+            className={`transition-transform duration-300 ${loggingOut ? "translate-x-1 rotate-12" : ""
+              }`}
+          >
+            ➡️
+          </span>
+        </button>
       </div>
-
       {/* Today's Status */}
       <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6 mb-8">
         <div className="flex items-center gap-3">
@@ -107,22 +144,22 @@ export default function Home() {
           icon="👤"
           onClick={() => navigate("/profile-dashboard")}
         />
-        
-        <DashboardCard 
-          title="Payroll" 
-          icon="💳" 
+
+        <DashboardCard
+          title="Payroll"
+          icon="💳"
           onClick={() => navigate("/payroll")}
         />
-        
-        <DashboardCard 
-          title="Analytics" 
-          icon="📊" 
+
+        <DashboardCard
+          title="Analytics"
+          icon="📊"
           onClick={() => navigate("/analytics")}
         />
-        
-        <DashboardCard 
-          title="HR Assistant" 
-          icon="🧠" 
+
+        <DashboardCard
+          title="HR Assistant"
+          icon="🧠"
           onClick={() => navigate("/hr-assistant")}
         />
 
@@ -136,17 +173,7 @@ export default function Home() {
           />
         )}
 
-        <DashboardCard
-          title="Logout"
-          icon="➡️"
-          onClick={() => {
-            localStorage.removeItem('token');
-            localStorage.removeItem('userId');
-            localStorage.removeItem('userName');
-            localStorage.removeItem('role');
-            navigate("/");
-          }}
-        />
+
       </div>
     </div>
   );
@@ -158,11 +185,10 @@ function DashboardCard({ title, icon, onClick, isSpecial }) {
       onClick={onClick}
       className={`backdrop-blur-md border rounded-xl p-8
                  flex flex-col items-center justify-center
-                 hover:transition cursor-pointer ${
-                   isSpecial
-                     ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400/30 hover:from-purple-500/30 hover:to-pink-500/30'
-                     : 'bg-white/10 border-white/20 hover:bg-white/20'
-                 }`}
+                 hover:transition cursor-pointer ${isSpecial
+          ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400/30 hover:from-purple-500/30 hover:to-pink-500/30'
+          : 'bg-white/10 border-white/20 hover:bg-white/20'
+        }`}
     >
       <div className="text-3xl mb-2">{icon}</div>
       <p className="text-lg font-medium">{title}</p>
